@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="b868d706-d87e-460c-a218-f02dca8a1b59">
+		<http:listener-connection host="localhost" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="a1c2bf5a-49c1-43c6-b168-54f3c5882748" basePath="/users/Jagriti62" >
+		<http:request-connection protocol="HTTPS" host="api.github.com" />
+	</http:request-config>
+	<flow name="exp-mule-auto-upgrade-apipublicFlow" doc:id="05e9ffee-a201-44c2-949c-731ad601a24b" >
+		<http:listener doc:name="Listener" doc:id="cc19ccc7-11f1-48bd-8ee7-19124f3329ae" config-ref="HTTP_Listener_config" path="/test"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c1f327e4-e1db-48ea-8ce6-94bac9e30eb8" message="listing all the repo present inside the github"/>
+		<http:request method="GET" doc:name="Request" doc:id="eb6020a9-4623-4820-9c19-1d7a6403774d" config-ref="HTTP_Request_configuration" path="/repos">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "Bearer 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"
+}]]]></http:headers>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="4f9c4558-09bc-4652-9fa5-0cb56da0aaea" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((item, index) ->
+{
+    id : item.id,
+    name : item.name
+}
+)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
